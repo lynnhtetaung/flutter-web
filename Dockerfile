@@ -9,11 +9,25 @@ COPY . .
 
 # Install necessary dependencies
 RUN apt-get update \
-    && apt-get install -y xdg-utils python3 python3-pip xdotool xvfb \
+    && apt-get install -y xdg-utils python3 python3-pip xdotool xvfb unzip wget gnupg2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python packages
-RUN pip3 install pyautogui
+# Copy and install Python packages
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
+
+# Download and install Chrome browser
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-linux-signing-key.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/google-linux-signing-key.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable
+
+# Download and install ChromeDriver
+RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) \
+    && wget -N https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
+    && unzip chromedriver_linux64.zip \
+    && chmod +x chromedriver \
+    && mv -f chromedriver /usr/local/bin/chromedriver
 
 # Enable Flutter web
 RUN flutter config --enable-web

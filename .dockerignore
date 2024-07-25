@@ -1,0 +1,9 @@
+# Ignore virtual environment
+fplas-flutter-venv/
+
+# Ignore other files and directories if necessary
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.git
