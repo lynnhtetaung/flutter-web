@@ -1,0 +1,9 @@
+version: '3.1'
+services:
+    flutter-app:
+        build: .
+        restart: always
+        ports:
+            - "8080:8080"
+        command: >
+            sh -c "flutter pub get && flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0"
