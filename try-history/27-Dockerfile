@@ -1,0 +1,45 @@
+# Use the base Flutter image from Docker Hub
+FROM cirrusci/flutter:stable
+
+# Set environment variables for paths
+ENV TEMPLATE_PROJECT_DIR="/app"
+ENV SCREENSHOT_SAVE_DIR="/app/screenshots"
+ENV FLUTTER_EXECUTABLE="/sdks/flutter/bin/flutter"
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the Flutter project files into the container
+COPY . .
+
+# Install necessary dependencies
+RUN apt-get update \
+    && apt-get install -y xdg-utils python3 python3-pip xdotool xvfb unzip wget gnupg2 curl net-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Playwright and its dependencies
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g playwright
+
+# Copy and install Python packages
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
+
+# Enable Flutter web
+RUN flutter config --enable-web
+
+# Get Flutter dependencies
+RUN flutter pub get
+
+# Copy the Python script into the container
+COPY run_flutter_and_screenshot.py /usr/local/bin/run_flutter_and_screenshot.py
+
+# Make the script executable
+RUN chmod +x /usr/local/bin/run_flutter_and_screenshot.py
+
+# Expose the port for the web server (default is 8080)
+EXPOSE 8080
+
+# Command to run the Python script with xvfb-run
+CMD ["xvfb-run", "-a", "python3", "/usr/local/bin/run_flutter_and_screenshot.py"]

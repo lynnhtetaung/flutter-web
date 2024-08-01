@@ -1,48 +1,65 @@
-# Use the base Flutter image from Docker Hub
-FROM cirrusci/flutter:stable
+# Use the base image from Ubuntu
+FROM ubuntu:20.04
 
-# Set the working directory in the container
-WORKDIR /app
-
-# Copy the Flutter project files into the container
-COPY . .
+# Set environment variable to avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install necessary dependencies
 RUN apt-get update \
-    && apt-get install -y xdg-utils python3 python3-pip xdotool xvfb unzip wget gnupg2 \
+    && apt-get install -y curl git vim wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback \
+    python3 python3-pip xdg-utils xdotool xvfb gnupg2 net-tools \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python packages
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+    # Install Chrome
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
+apt-get update && \
+apt-get install -y google-chrome-stable && \
+apt-get clean && \
+rm -rf /var/lib/apt/lists/*
+ENV CHROME_EXECUTABLE /usr/bin/google-chrome-stable
 
-# Download and install Chrome browser
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-linux-signing-key.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/google-linux-signing-key.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable
+# Install Playwright for Python
+RUN pip3 install playwright \
+    && playwright install
 
-# Download and install ChromeDriver
-RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) \
-    && wget -N https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
-    && unzip chromedriver_linux64.zip \
-    && chmod +x chromedriver \
-    && mv -f chromedriver /usr/local/bin/chromedriver
+# Set environment variables for Flutter
+ENV DEBIAN_FRONTEND=dialog
+ENV PUB_HOSTED_URL=https://pub.flutter-io.cn
+ENV FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+
+# Download Flutter SDK from Flutter GitHub repo
+RUN git clone https://github.com/flutter/flutter.git /usr/local/flutter
+
+# Set Flutter environment path
+ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
+
+# Run Flutter doctor
+RUN flutter doctor
 
 # Enable Flutter web
-RUN flutter config --enable-web
+RUN flutter channel master \
+    && flutter upgrade \
+    && flutter config --enable-web
 
-# Get Flutter dependencies
-RUN flutter pub get
+# Set the working directory
+WORKDIR /app/
 
-# Copy the Python script into the container
-COPY run_flutter_and_screenshot.py /usr/local/bin/run_flutter_and_screenshot.py
+# Copy files to container
+COPY . /app/
 
-# Make the script executable
-RUN chmod +x /usr/local/bin/run_flutter_and_screenshot.py
+# Build the Flutter web project
+RUN flutter build web
 
-# Expose the port for the web server (default is 8080)
-EXPOSE 8080
+# Install Flask and other Python dependencies
+RUN pip3 install flask
 
-# Command to run the Python script with xvfb-run
-CMD ["xvfb-run", "-a", "python3", "/usr/local/bin/run_flutter_and_screenshot.py", "/app/lib/main.dart"]
+# Set environment variable for Flask
+ENV FLASK_APP=app.py
+
+# Expose the port for Flask
+EXPOSE 5000
+
+# Command to start Flask server
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]

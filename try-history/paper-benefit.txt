@@ -1,0 +1,6 @@
+Benefits of Using Playwright:
+Cross-browser Support: Playwright supports multiple browsers including Chromium, Firefox, and WebKit.
+Ease of Use: It simplifies the process of setting up and using browser automation.
+Compatibility: Playwright works across various operating systems, making it a good choice for diverse environments.
+Headless Mode: Playwright has robust support for headless mode, which is useful for automated tasks like taking screenshots.
+This should address the compatibility issues you might face with Selenium and ChromeDriver, providing a more robust and portable solution for taking screenshots.

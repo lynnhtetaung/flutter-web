@@ -33,7 +33,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text("To-Do List"),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.blue,
         ),
       ),
     );
