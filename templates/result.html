@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparison Result</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .image-container .image-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .image-container img {
+            max-width: 150%;
+        }
+        .image-label {
+            text-align: center;
+            font-weight: bold;
+        }
+        .icon {
+            font-size: 2em;
+            margin: 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Comparison Result</h1>
+        <div class="image-container">
+            <div class="image-item">
+                <div class="image-label">Student Image</div>
+                <img src="http://localhost:5000/static/{{ student_image }}" alt="Student Image">
+            </div>
+            <div class="icon">
+                <i class="fas fa-exchange-alt mx-5 mt-5"></i>
+            </div>
+            <div class="image-item">
+                <div class="image-label">Correct Image</div>
+                <img src="http://localhost:5000/static/{{ correct_image }}" alt="Correct Image">
+            </div>
+            <div class="icon">
+                <i class="fas fa-arrow-right mx-5 mt-5"></i>
+            </div>
+            <div class="image-item">
+                <div class="image-label">Highlight Difference</div>
+                <img src="http://localhost:5000/static/{{ highlight_image }}" alt="Highlight Difference">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

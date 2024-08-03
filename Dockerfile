@@ -56,7 +56,7 @@ RUN flutter build web
 RUN pip3 install flask
 
 # Set environment variable for Flask
-ENV FLASK_APP=app.py
+ENV FLASK_APP=main.py
 
 # Expose the port for Flask
 EXPOSE 5000
